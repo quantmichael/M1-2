@@ -1,5 +1,5 @@
-.venv/
-secrets/
 .env
+secrets/
+.venv/
 __pycache__/
 *.pyc
