@@ -694,33 +694,23 @@ flowchart TD
 
 ## 17. 화면
 
-프로젝트의 주요 기능을 확인할 수 있는 화면입니다.
-
 ### AI Chat
 
 현재 제조 데이터 Summary를 기반으로 AI에게 질문하고 답변을 받는 화면입니다.
 
-```text
-docs/images/chat.png
-```
+![AI Chat](docs/images/chat.png)
 
 ### Data CRUD
 
 진동 데이터를 추가·조회·수정·삭제하는 화면입니다.
 
-```text
-docs/images/data-crud.png
-```
+![Data CRUD](docs/images/data-crud.png)
 
 ### Conversation History
 
 이전 AI 대화를 저장하고 다시 불러오는 화면입니다.
 
-```text
-docs/images/conversation-history.png
-```
-
-> 최종 제출 전 위 경로에 실제 화면 캡처 이미지를 추가합니다.
+![Conversation History](docs/images/conversation-history.png)
 
 ---
 
