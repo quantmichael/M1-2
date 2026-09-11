@@ -164,6 +164,7 @@ def get_data_summary():
 
     df["date"] = pd.to_datetime(
         df["date"],
+        format="mixed",
         utc=True
     )
 
