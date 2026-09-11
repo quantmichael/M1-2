@@ -780,3 +780,21 @@ flowchart LR
 - 예측 모델 결과 해석
 - Feature Importance 기반 원인 후보 분석
 - AI Agent 기반 제조 데이터 질의응답VV
+
+## 선택과제 - RMS 진동 추이 시각화
+
+사용자가 제조 데이터의 변화를 직관적으로 확인할 수 있도록 RMS 시계열 Line Chart를 추가했습니다.
+
+그래프는 `GET /api/data` 응답을 이용하여 측정 시각을 X축, RMS 값을 Y축으로 표시합니다.
+
+데이터가 추가·수정·삭제되면 기존 CRUD 처리 이후 데이터를 다시 불러오므로 Summary와 함께 RMS 그래프도 자동 갱신됩니다.
+
+### 동작 흐름
+
+```mermaid
+flowchart LR
+    A["Firestore"] --> B["GET /api/data"]
+    B --> C["Date 기준 정렬"]
+    C --> D["RMS 추출"]
+    D --> E["Canvas Line Chart"]
+    F["CRUD 변경"] --> B
