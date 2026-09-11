@@ -2,242 +2,584 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Mixer Vibration Monitoring AI Agent</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 </head>
 
 <body>
 
-    <header class="header">
-        <h1>Mixer Vibration Monitoring AI Agent</h1>
-        <p>교반구동장치 진동 상태 분석 AI Agent</p>
+<div class="app-container">
+
+    <!-- =========================================================
+         Header
+    ========================================================== -->
+    <header class="app-header">
+
+        <div>
+            <p class="eyebrow">
+                Manufacturing AI Agent
+            </p>
+
+            <h1>
+                교반구동장치 진동 상태 분석 AI Agent
+            </h1>
+
+            <p class="header-description">
+                교반구동장치의 진동 데이터를 분석하고
+                현재 상태를 AI에게 자연어로 질문할 수 있습니다.
+            </p>
+        </div>
+
+        <div class="server-notice">
+            Render 서버가 장시간 사용되지 않은 경우
+            첫 요청에 시간이 조금 걸릴 수 있습니다.
+        </div>
+
     </header>
 
-    <main class="container">
 
-        <!-- ============================= -->
-        <!-- Chat 영역 -->
-        <!-- ============================= -->
+    <!-- =========================================================
+         Summary
+    ========================================================== -->
+    <section class="panel">
 
-        <section class="chat-layout">
+        <div class="section-header">
 
-            <!-- 이전 대화 -->
-            <aside class="conversation-panel">
+            <div>
+                <p class="section-eyebrow">
+                    DATA SUMMARY
+                </p>
 
-                <div class="conversation-header">
-                    <h2>이전 대화</h2>
+                <h2>
+                    현재 진동 상태
+                </h2>
+            </div>
 
-                    <button id="new-chat-button">
-                        + 새 대화
-                    </button>
+            <button
+                id="refresh-summary-button"
+                class="secondary-button"
+                type="button"
+            >
+                새로고침
+            </button>
+
+        </div>
+
+
+        <div class="summary-grid">
+
+            <article class="summary-card">
+
+                <span class="summary-label">
+                    최신 RMS
+                </span>
+
+                <strong
+                    id="summary-rms"
+                    class="summary-value"
+                >
+                    -
+                </strong>
+
+                <span class="summary-unit">
+                    RMS
+                </span>
+
+            </article>
+
+
+            <article class="summary-card">
+
+                <span class="summary-label">
+                    RMS 상대 위치
+                </span>
+
+                <strong
+                    id="summary-rms-percentile"
+                    class="summary-value"
+                >
+                    -
+                </strong>
+
+                <span class="summary-unit">
+                    Percentile
+                </span>
+
+            </article>
+
+
+            <article class="summary-card">
+
+                <span class="summary-label">
+                    최근 3시간
+                </span>
+
+                <strong
+                    id="summary-trend-3h"
+                    class="summary-value small-value"
+                >
+                    -
+                </strong>
+
+                <span class="summary-unit">
+                    Short-term Trend
+                </span>
+
+            </article>
+
+
+            <article class="summary-card">
+
+                <span class="summary-label">
+                    최근 6시간
+                </span>
+
+                <strong
+                    id="summary-trend-6h"
+                    class="summary-value small-value"
+                >
+                    -
+                </strong>
+
+                <span class="summary-unit">
+                    Mid-term Trend
+                </span>
+
+            </article>
+
+
+            <article class="summary-card">
+
+                <span class="summary-label">
+                    Peak-to-Peak
+                </span>
+
+                <strong
+                    id="summary-p2p"
+                    class="summary-value"
+                >
+                    -
+                </strong>
+
+                <span class="summary-unit">
+                    Latest
+                </span>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         선택과제 - RMS Chart
+    ========================================================== -->
+    <section class="panel">
+
+        <div class="section-header">
+
+            <div>
+                <p class="section-eyebrow">
+                    VIBRATION TREND
+                </p>
+
+                <h2>
+                    RMS 진동 추이
+                </h2>
+
+                <p class="section-description">
+                    시간에 따른 교반구동장치의 RMS 진동 변화를
+                    시계열 그래프로 확인합니다.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <canvas
+                id="rms-chart"
+                aria-label="RMS vibration trend chart"
+            ></canvas>
+
+            <div
+                id="chart-empty-message"
+                class="chart-empty hidden"
+            >
+                표시할 데이터가 없습니다.
+            </div>
+
+        </div>
+
+
+        <div class="chart-footer">
+
+            <span>
+                X축: 측정 시각
+            </span>
+
+            <span>
+                Y축: RMS
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         Main Grid
+    ========================================================== -->
+    <div class="main-grid">
+
+
+        <!-- =====================================================
+             Conversation History
+        ====================================================== -->
+        <aside class="panel conversation-panel">
+
+            <div class="section-header">
+
+                <div>
+                    <p class="section-eyebrow">
+                        HISTORY
+                    </p>
+
+                    <h2>
+                        이전 대화
+                    </h2>
                 </div>
 
-                <div id="conversation-list">
-                    <p class="empty-message">
-                        대화를 불러오는 중...
+                <button
+                    id="new-chat-button"
+                    class="primary-button small-button"
+                    type="button"
+                >
+                    + 새 대화
+                </button>
+
+            </div>
+
+
+            <div
+                id="conversation-list"
+                class="conversation-list"
+            >
+                <p class="empty-message">
+                    대화를 불러오는 중입니다.
+                </p>
+            </div>
+
+        </aside>
+
+
+        <!-- =====================================================
+             AI Chat
+        ====================================================== -->
+        <section class="panel chat-panel">
+
+            <div class="section-header">
+
+                <div>
+                    <p class="section-eyebrow">
+                        AI CHAT
+                    </p>
+
+                    <h2>
+                        제조 데이터 기반 AI Chat
+                    </h2>
+
+                    <p class="section-description">
+                        현재 저장된 진동 데이터 Summary를
+                        AI Context로 사용합니다.
                     </p>
                 </div>
 
-            </aside>
+            </div>
 
-            <!-- AI Chat -->
-            <section class="chat-panel">
 
-                <h2>AI 진동 분석</h2>
+            <div
+                id="chat-messages"
+                class="chat-messages"
+            >
 
-                <div id="chat-messages" class="chat-messages">
+                <div class="message assistant-message">
 
-                    <div class="message assistant">
-                        안녕하세요.
-                        교반구동장치 진동 데이터를 분석하는 AI Agent입니다.
+                    <div class="message-role">
+                        AI
+                    </div>
+
+                    <div class="message-content">
+                        교반구동장치의 현재 진동 데이터에 대해
+                        질문해 주세요.
                     </div>
 
                 </div>
 
-                <div class="chat-input-area">
+            </div>
+
+
+            <div
+                id="chat-loading"
+                class="chat-loading hidden"
+            >
+
+                <span class="loading-dot"></span>
+                <span class="loading-dot"></span>
+                <span class="loading-dot"></span>
+
+                <span>
+                    데이터를 분석하고 있습니다.
+                </span>
+
+            </div>
+
+
+            <div class="chat-input-area">
+
+                <textarea
+                    id="chat-input"
+                    rows="3"
+                    placeholder="예: 최근 교반기의 진동 수준은 평소보다 높은가?"
+                ></textarea>
+
+                <button
+                    id="send-button"
+                    class="primary-button"
+                    type="button"
+                >
+                    전송
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- =========================================================
+         Data Management
+    ========================================================== -->
+    <section class="panel">
+
+        <div class="section-header">
+
+            <div>
+                <p class="section-eyebrow">
+                    DATA MANAGEMENT
+                </p>
+
+                <h2>
+                    진동 데이터 관리
+                </h2>
+
+                <p class="section-description">
+                    측정 데이터를 추가·수정·삭제할 수 있습니다.
+                    변경된 데이터는 Summary와 RMS 그래프에 반영됩니다.
+                </p>
+            </div>
+
+            <button
+                id="add-data-button"
+                class="primary-button"
+                type="button"
+            >
+                + 데이터 추가
+            </button>
+
+        </div>
+
+
+        <!-- Data Form -->
+        <form
+            id="data-form"
+            class="data-form hidden"
+        >
+
+            <input
+                id="data-id"
+                type="hidden"
+            >
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="data-date">
+                        측정 일시
+                    </label>
 
                     <input
-                        type="text"
-                        id="chat-input"
-                        placeholder="진동 데이터에 대해 질문하세요."
+                        id="data-date"
+                        type="datetime-local"
+                        required
                     >
 
-                    <button id="send-button">
-                        전송
-                    </button>
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="data-value">
+                        RMS
+                    </label>
+
+                    <input
+                        id="data-value"
+                        type="number"
+                        step="any"
+                        required
+                        placeholder="예: 2.7149"
+                    >
 
                 </div>
 
-            </section>
 
-        </section>
+                <div class="form-group">
 
+                    <label for="data-p2p">
+                        Peak-to-Peak
+                    </label>
 
-        <!-- ============================= -->
-        <!-- Summary -->
-        <!-- ============================= -->
+                    <input
+                        id="data-p2p"
+                        type="number"
+                        step="any"
+                        placeholder="예: 17.8828"
+                    >
 
-        <section class="summary-section">
-
-            <h2>현재 진동 상태</h2>
-
-            <div class="summary-grid">
-
-                <div class="summary-card">
-                    <span>현재 RMS</span>
-                    <strong id="summary-rms">-</strong>
                 </div>
 
-                <div class="summary-card">
-                    <span>RMS 백분위</span>
-                    <strong id="summary-rms-percentile">-</strong>
+
+                <div class="form-group">
+
+                    <label for="data-sample-count">
+                        Sample Count
+                    </label>
+
+                    <input
+                        id="data-sample-count"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="예: 1024"
+                    >
+
                 </div>
 
-                <div class="summary-card">
-                    <span>최근 3시간</span>
-                    <strong id="summary-trend-3h">-</strong>
-                </div>
 
-                <div class="summary-card">
-                    <span>최근 6시간</span>
-                    <strong id="summary-trend-6h">-</strong>
-                </div>
+                <div class="form-group form-group-full">
 
-                <div class="summary-card">
-                    <span>Peak to Peak</span>
-                    <strong id="summary-p2p">-</strong>
+                    <label for="data-memo">
+                        Memo
+                    </label>
+
+                    <input
+                        id="data-memo"
+                        type="text"
+                        placeholder="교반구동장치 진동 측정"
+                    >
+
                 </div>
 
             </div>
 
-        </section>
 
+            <div class="form-actions">
 
-        <!-- ============================= -->
-        <!-- Data Management -->
-        <!-- ============================= -->
-
-        <section class="data-section">
-
-            <div class="section-header">
-                <h2>측정 데이터 관리</h2>
-
-                <button id="add-data-button">
-                    + 데이터 추가
+                <button
+                    id="cancel-data-button"
+                    class="secondary-button"
+                    type="button"
+                >
+                    취소
                 </button>
-            </div>
 
-
-            <div id="data-form" class="data-form hidden">
-
-                <div class="form-grid">
-
-                    <div>
-                        <label for="data-date">
-                            측정시각
-                        </label>
-
-                        <input
-                            type="datetime-local"
-                            id="data-date"
-                        >
-                    </div>
-
-                    <div>
-                        <label for="data-value">
-                            RMS
-                        </label>
-
-                        <input
-                            type="number"
-                            id="data-value"
-                            step="any"
-                        >
-                    </div>
-
-                    <div>
-                        <label for="data-memo">
-                            메모
-                        </label>
-
-                        <input
-                            type="text"
-                            id="data-memo"
-                        >
-                    </div>
-
-                    <div>
-                        <label for="data-p2p">
-                            Peak to Peak
-                        </label>
-
-                        <input
-                            type="number"
-                            id="data-p2p"
-                            step="any"
-                        >
-                    </div>
-
-                    <div>
-                        <label for="data-sample-count">
-                            Sample Count
-                        </label>
-
-                        <input
-                            type="number"
-                            id="data-sample-count"
-                        >
-                    </div>
-
-                </div>
-
-
-                <div class="form-actions">
-
-                    <button id="save-data-button">
-                        저장
-                    </button>
-
-                    <button id="cancel-data-button">
-                        취소
-                    </button>
-
-                </div>
+                <button
+                    id="save-data-button"
+                    class="primary-button"
+                    type="submit"
+                >
+                    저장
+                </button>
 
             </div>
 
+        </form>
 
-            <div class="table-wrapper">
 
-                <table>
+        <!-- Table -->
+        <div class="table-wrapper">
 
-                    <thead>
-                        <tr>
-                            <th>측정시각</th>
-                            <th>RMS</th>
-                            <th>메모</th>
-                            <th>Peak to Peak</th>
-                            <th>Sample Count</th>
-                            <th>관리</th>
-                        </tr>
-                    </thead>
+            <table class="data-table">
 
-                    <tbody id="data-table-body">
-                    </tbody>
+                <thead>
 
-                </table>
+                <tr>
+                    <th>측정 일시</th>
+                    <th>RMS</th>
+                    <th>Peak-to-Peak</th>
+                    <th>Sample Count</th>
+                    <th>Memo</th>
+                    <th>관리</th>
+                </tr>
 
-            </div>
+                </thead>
 
-        </section>
+                <tbody id="data-table-body">
 
-    </main>
+                <tr>
+                    <td
+                        colspan="6"
+                        class="table-empty"
+                    >
+                        데이터를 불러오는 중입니다.
+                    </td>
+                </tr>
 
-    <script src="config.js"></script>
-    <script src="app.js"></script>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         Footer
+    ========================================================== -->
+    <footer class="app-footer">
+
+        <p>
+            Mixer Vibration Monitoring AI Agent
+        </p>
+
+        <p>
+            FastAPI · Firestore · GPT · Vanilla JavaScript
+        </p>
+
+    </footer>
+
+</div>
+
+
+<script src="config.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
