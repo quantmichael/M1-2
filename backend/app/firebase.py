@@ -50,8 +50,6 @@ def initialize_firebase():
     )
 
 
-
-
 initialize_firebase()
 
 db = firestore.client()
